@@ -5,15 +5,16 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class GreetServer {
+
+public class EchoServer {
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
 
     public static void main(String[] args) {
-        GreetServer server = new GreetServer();
-        server.start(6666);
+        EchoServer server = new EchoServer();
+        server.start(4444);
     }
 
     public void start(int port) {
@@ -22,12 +23,14 @@ public class GreetServer {
             clientSocket = serverSocket.accept();
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String greeting = in.readLine();
-            if ("hello server".equals(greeting)) {
-                out.println("hello client2");
-                //System.out.println("hello Client");
-            } else {
-                out.println("unrecognised greeting");
+
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                if (".".equals(inputLine)) {
+                    out.println("good bye");
+                    break;
+                }
+                out.println(inputLine);
             }
         }
         catch(IOException e) {
