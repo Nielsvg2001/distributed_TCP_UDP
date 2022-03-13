@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class Client {
 
      private DatagramSocket datagramSocket;
-     private byte[] buffer = new byte[25600];
+     private byte[] buffer = new byte[256];
      private String username;
 
      public Client(DatagramSocket datagramSocket, String username){
@@ -20,6 +20,13 @@ public class Client {
              buffer = username.getBytes();
              DatagramPacket datagramPacket = new DatagramPacket(buffer,0,buffer.length, InetAddress.getByName("localhost"),1234);
              datagramSocket.send(datagramPacket);
+
+             Scanner scanner = new Scanner(System.in);
+             while(true){
+                 buffer = (username + ": " +scanner.nextLine()).getBytes();
+                 datagramPacket = new DatagramPacket(buffer, 0, buffer.length,InetAddress.getByName("localhost"),1234);
+                 datagramSocket.send(datagramPacket);
+             }
          }catch (IOException e){
              e.printStackTrace();
          }
@@ -31,7 +38,7 @@ public class Client {
              public void run() {
                  byte[] buffer = new byte[26500];
 
-                 while(!datagramSocket.isConnected()) {
+                 while(true) {
                      try {
                          DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length);
                          datagramSocket.receive(datagramPacket);
@@ -62,11 +69,11 @@ public class Client {
 
     public static void main(String[] args) {
          try {
-             // Scanner scanner = new Scanner(System.in);
+             Scanner scanner = new Scanner(System.in);
              System.out.print("Enter your username for the group chat: ");
-             // String username = scanner.nextLine();
+             String username = scanner.nextLine();
              DatagramSocket datagramSocket = new DatagramSocket();
-             Client client = new Client(datagramSocket, "niels");
+             Client client = new Client(datagramSocket, username);
              client.listenForMessage();
              client.sendMessage();
          }catch (IOException e){
