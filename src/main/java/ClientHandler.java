@@ -1,40 +1,47 @@
 import javax.imageio.IIOException;
 import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ClientHandler implements Runnable{
 
-    public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
-    private Socket socket;
-    private BufferedReader bufferedReader;
-    private BufferedWriter bufferedWriter;
+    public ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
+    private DatagramSocket datagramSocket;
+    private byte[] buffer = new byte[25600];
     private String clientUsername;
+    private InetAddress address;
+    private int port;
 
-    public ClientHandler(Socket socket){
+    public ClientHandler(DatagramSocket datagramSocket){
         try{
-            this.socket = socket;
-            this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.clientUsername = bufferedReader.readLine();
-            clientHandlers.add(this);
-            broadcastMessage("SERVER: " + clientUsername + " has entered the chat!");
+            DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length);
+            datagramSocket.receive(datagramPacket);
+            this.clientUsername = new String(datagramPacket.getData(), 0, datagramPacket.getLength());
+            this.address = datagramPacket.getAddress();
+            this.port = datagramPacket.getPort();
+            this.clientHandlers.add(this);
+            broadcastMessage("SERVER:" + clientUsername + " had entered chatroom");
+
         } catch (IOException e){
-            closeEverything(socket, bufferedReader, bufferedWriter);
+            e.printStackTrace();
         }
     }
 
 
     @Override
     public void run() {
-        String messageFromClient;
-        while(!socket.isClosed()){
-            try{
-                messageFromClient = bufferedReader.readLine(); // This is a blocking line so run on separate thread
-                broadcastMessage(messageFromClient);
-            }catch (IOException e){
-                closeEverything(socket, bufferedReader, bufferedWriter);
-                break;
+        byte[] messageFromClient;
+        while(!datagramSocket.isClosed()){
+            try {
+                DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length);
+                this.datagramSocket.receive(datagramPacket); // This is a blocking line so run on separate thread
+                broadcastMessage(new String(datagramPacket.getData(),0, datagramPacket.getLength()));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -42,20 +49,19 @@ public class ClientHandler implements Runnable{
     public void broadcastMessage(String messageToSend){
         for(ClientHandler clientHandler: clientHandlers){
             try{
-                if(!clientHandler.clientUsername.equals(clientUsername)){
-                    clientHandler.bufferedWriter.write(messageToSend);
-                    clientHandler.bufferedWriter.newLine(); // Same as pressing enter
-                    clientHandler.bufferedWriter.flush();
+                if(true){
+                    DatagramPacket datagramPacket = new DatagramPacket(messageToSend.getBytes(),0,messageToSend.length(),clientHandler.address,clientHandler.port);
+                    clientHandler.datagramSocket.send(datagramPacket);
                 }
             }catch (IOException e){
-                closeEverything(socket, bufferedReader, bufferedWriter);
+                e.printStackTrace();
             }
         }
     }
 
     public void removeClientHandler(){
         clientHandlers.remove(this);
-        broadcastMessage("SERVER: "+ clientUsername + " has left the chat!");
+        //broadcastMessage("SERVER: "+ clientUsername + " has left the chat!");
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter){

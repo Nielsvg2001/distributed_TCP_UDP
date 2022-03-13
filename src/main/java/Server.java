@@ -1,44 +1,40 @@
 import javax.imageio.IIOException;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
 
-    private final ServerSocket serverSocket;
+    private final DatagramSocket datagramSocket;
 
-    public Server(ServerSocket serverSocket) {
-        this.serverSocket = serverSocket;
+    public Server(DatagramSocket datagramSocket) {
+        this.datagramSocket = datagramSocket;
     }
 
     public void startServer(){
-        try{
-            while(!serverSocket.isClosed()){
-                Socket socket = serverSocket.accept();
-                System.out.println("A new client has connected!");
-                ClientHandler clientHandler = new ClientHandler(socket);
+        while(!datagramSocket.isClosed()){
+            ClientHandler clientHandler = new ClientHandler(datagramSocket);
 
-                Thread thread = new Thread(clientHandler);
-                thread.start();
-            }
-        }catch (IOException e){
-            closeServerSocket();
+            Thread thread = new Thread(clientHandler);
+            thread.start();
         }
     }
 
-    public void closeServerSocket() {
-        try {
-            if (serverSocket != null) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void closeServerSocket() {
+//        try {
+//            if (serverSocket != null) {
+//                serverSocket.close();
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(1234);
-        Server server = new Server(serverSocket);
+        DatagramSocket datagramSocket = new DatagramSocket(1234);
+        Server server = new Server(datagramSocket);
         server.startServer();
     }
 }

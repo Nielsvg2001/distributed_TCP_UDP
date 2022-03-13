@@ -1,39 +1,27 @@
 import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
 
-     private Socket socket;
-     private BufferedReader bufferedReader;
-     private BufferedWriter bufferedWriter;
+     private DatagramSocket datagramSocket;
+     private byte[] buffer = new byte[25600];
      private String username;
 
-     public Client(Socket socket, String username){
-         try {
-             this.socket = socket;
-             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             this.username = username;
-         }catch (IOException e){
-             closeEverything(socket, bufferedReader, bufferedWriter);
-         }
+     public Client(DatagramSocket datagramSocket, String username){
+         this.datagramSocket = datagramSocket;
+         this.username = username;
      }
      public void sendMessage(){
          try{
-             bufferedWriter.write(username);
-             bufferedWriter.newLine();
-             bufferedWriter.flush();
-
-             Scanner scanner = new Scanner(System.in);
-             while(!socket.isClosed()){
-                 String messageToSend = scanner.nextLine();
-                 bufferedWriter.write(username + ": " + messageToSend);
-                 bufferedWriter.newLine();
-                 bufferedWriter.flush();
-             }
+             buffer = username.getBytes();
+             DatagramPacket datagramPacket = new DatagramPacket(buffer,0,buffer.length, InetAddress.getByName("localhost"),1234);
+             datagramSocket.send(datagramPacket);
          }catch (IOException e){
-             closeEverything(socket, bufferedReader, bufferedWriter);
+             e.printStackTrace();
          }
      }
 
@@ -41,13 +29,15 @@ public class Client {
          new Thread(new Runnable() {
              @Override
              public void run() {
-                 String messageFromGroupChat;
-                 while(socket.isConnected()) {
+                 byte[] buffer = new byte[26500];
+
+                 while(!datagramSocket.isConnected()) {
                      try {
-                         messageFromGroupChat = bufferedReader.readLine();
-                         System.out.println(messageFromGroupChat);
+                         DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length);
+                         datagramSocket.receive(datagramPacket);
+                         System.out.println(new String(datagramPacket.getData(), 0, datagramPacket.getLength()));
                      } catch (IOException e) {
-                         closeEverything(socket, bufferedReader, bufferedWriter);
+                         e.printStackTrace();
                      }
                  }
              }
@@ -72,11 +62,11 @@ public class Client {
 
     public static void main(String[] args) {
          try {
-             Scanner scanner = new Scanner(System.in);
+             // Scanner scanner = new Scanner(System.in);
              System.out.print("Enter your username for the group chat: ");
-             String username = scanner.nextLine();
-             Socket socket = new Socket("localhost", 1234);
-             Client client = new Client(socket, username);
+             // String username = scanner.nextLine();
+             DatagramSocket datagramSocket = new DatagramSocket();
+             Client client = new Client(datagramSocket, "niels");
              client.listenForMessage();
              client.sendMessage();
          }catch (IOException e){
