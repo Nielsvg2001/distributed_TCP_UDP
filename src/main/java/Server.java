@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class Server {
 
@@ -25,7 +26,7 @@ public class Server {
 
                         File fileToDownload = new File("reveived_file.txt");
                         FileOutputStream fileOutputStream = new FileOutputStream(fileToDownload);
-                        fileOutputStream.write(new String(datagramPacket.getData(), 0, datagramPacket.getLength()).getBytes());
+                        fileOutputStream.write(Arrays.copyOfRange(buffer,0,datagramPacket.getLength()));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
