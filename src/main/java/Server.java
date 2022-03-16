@@ -2,6 +2,8 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -10,33 +12,28 @@ public class Server {
     public static void main(String[] args) throws IOException {
 
 
-        ServerSocket serverSocket = new ServerSocket(1234);
-        while (!serverSocket.isClosed()) {
-            try {
-                Socket socket = serverSocket.accept();
+        DatagramSocket datagramSocket = new DatagramSocket(1234);
+        while (true) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        byte[] buffer = new byte[25600];
 
-                DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+                        DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length);
+                        datagramSocket.receive(datagramPacket);
+                        String test = new String(datagramPacket.getData(), 0, datagramPacket.getLength());
+                        System.out.print(test);
 
-                int fileNameLenght = dataInputStream.readInt();
-                if (fileNameLenght > 0) {
-                    byte[] fileNameBytes = new byte[fileNameLenght];
-                    dataInputStream.readFully(fileNameBytes, 0, fileNameBytes.length);
-                    String fileName = new String(fileNameBytes);
-
-                    int fileContentLenght = dataInputStream.readInt();
-                    if (fileContentLenght > 0) {
-                        byte[] fileContentBytes = new byte[fileContentLenght];
-                        dataInputStream.readFully(fileContentBytes, 0, fileContentBytes.length);
-                        File fileToDownload = new File(fileName);
+                        File fileToDownload = new File("reveived_file.txt");
                         FileOutputStream fileOutputStream = new FileOutputStream(fileToDownload);
-                        fileOutputStream.write(fileContentBytes);
-                        fileOutputStream.close();
+                        fileOutputStream.write(datagramPacket.getData());
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-            } catch (IOException error) {
-                error.printStackTrace();
-            }
+            });
+            thread.start();
         }
-
     }
 }

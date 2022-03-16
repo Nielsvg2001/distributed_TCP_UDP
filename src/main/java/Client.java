@@ -1,7 +1,11 @@
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.Scanner;
 
 
@@ -14,18 +18,11 @@ public class Client {
         File fileToSend = new File(filePath);
 
         try {
-            Socket socket = new Socket("localhost", 1234);
-            DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-            String filename = fileToSend.getName();
-            byte[] fileNameBytes = filename.getBytes();
-
-            byte[] fileContentBytes = new byte[(int) fileToSend.length()];
-
-            dataOutputStream.writeInt(fileNameBytes.length);
-            dataOutputStream.write(fileNameBytes);
-
-            dataOutputStream.writeInt(fileContentBytes.length);
-            dataOutputStream.write(fileContentBytes);
+            byte[] buffer = new byte[25600];
+            buffer = Files.readAllBytes(fileToSend.toPath());
+            DatagramSocket datagramSocket = new DatagramSocket();
+            DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length, InetAddress.getByName("localhost"), 1234);
+            datagramSocket.send(datagramPacket);
         } catch (IOException error) {
             error.printStackTrace();
         }
