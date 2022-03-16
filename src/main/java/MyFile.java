@@ -1,6 +1,3 @@
-// https://www.youtube.com/watch?v=GLrlwwyd1gY&t=302s
-// https://github.com/WittCode/java-send-and-download-a-file
-
 public class MyFile {
 
     private int id;
