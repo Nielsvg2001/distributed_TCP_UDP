@@ -22,12 +22,10 @@ public class Server {
 
                         DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length);
                         datagramSocket.receive(datagramPacket);
-                        String test = new String(datagramPacket.getData(), 0, datagramPacket.getLength());
-                        System.out.print(test);
 
                         File fileToDownload = new File("reveived_file.txt");
                         FileOutputStream fileOutputStream = new FileOutputStream(fileToDownload);
-                        fileOutputStream.write(datagramPacket.getData());
+                        fileOutputStream.write(new String(datagramPacket.getData(), 0, datagramPacket.getLength()).getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
