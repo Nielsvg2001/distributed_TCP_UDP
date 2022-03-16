@@ -21,16 +21,11 @@ public class Server {
                         DatagramPacket datagramPacket = new DatagramPacket(buffer, 0, buffer.length);
                         datagramSocket.receive(datagramPacket);
                         String fileName = new String(buffer, 0, datagramPacket.getLength());
-                        System.out.println("hallo1");
                         if (fileName.contains(".")) {
-                            System.out.println("hallo2");
                             File fileToDownload = new File(fileName);
                             FileOutputStream fileOutputStream = new FileOutputStream(fileToDownload);
-                            System.out.print("hey");
                             datagramSocket.receive(datagramPacket);
-                            System.out.println(new String(buffer, 0, datagramPacket.getLength()) + "hallo3");
                             fileOutputStream.write(Arrays.copyOfRange(buffer, 0, datagramPacket.getLength()));
-                            System.out.print("bonjour");
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
