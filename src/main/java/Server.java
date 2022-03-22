@@ -8,12 +8,11 @@ import java.net.Socket;
 public class Server {
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(1234);
-
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
                 Thread thread = new Thread(() -> {
                     try {
-                        while(!serverSocket.isClosed()) {
+                        while(!socket.isClosed()) {
                             System.out.println("accepted");
                             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
                             int fileNameLenght = dataInputStream.readInt();
@@ -31,14 +30,14 @@ public class Server {
                                     fileOutputStream.close();
                                 }
                             }
+                            dataInputStream.close();
+                            socket.close();
                         }
                     } catch (IOException error) {
                         error.printStackTrace();
                     }
                 });
-
-
-                System.out.println("thred start");
+                System.out.println("thread start");
                 thread.start();
             }
     }
