@@ -17,7 +17,6 @@ public class Server {
             int finalI = i;
             Thread thread = new Thread(() -> {
                 try {
-                    System.out.println("New thread");
                     System.out.println(finalI);
                     File fileToDownload = new File("file" + finalI + ".txt");
                     FileOutputStream fileOutputStream = new FileOutputStream(fileToDownload);
@@ -26,7 +25,6 @@ public class Server {
                     e.printStackTrace();
                 }
             });
-            System.out.println("Start");
             thread.start();
             i++;
         }
