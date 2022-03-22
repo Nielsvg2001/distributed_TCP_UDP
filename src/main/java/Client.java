@@ -2,6 +2,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.Scanner;
 
 
@@ -19,7 +20,7 @@ public class Client {
             String filename = fileToSend.getName();
             byte[] fileNameBytes = filename.getBytes();
 
-            byte[] fileContentBytes = new byte[(int) fileToSend.length()];
+            byte[] fileContentBytes = Files.readAllBytes(fileToSend.toPath());
 
             dataOutputStream.writeInt(fileNameBytes.length);
             dataOutputStream.write(fileNameBytes);
