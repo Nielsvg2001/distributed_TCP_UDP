@@ -37,7 +37,7 @@ public class Server {
                         error.printStackTrace();
                     }
                 });
-                System.out.println("thread start");
+                System.out.println("niels was here");
                 thread.start();
             }
     }
