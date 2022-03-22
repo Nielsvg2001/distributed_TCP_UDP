@@ -13,7 +13,6 @@ public class Server {
                 Thread thread = new Thread(() -> {
                     try {
                         while(!socket.isClosed()) {
-                            System.out.println("accepted");
                             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
                             int fileNameLenght = dataInputStream.readInt();
                             if (fileNameLenght > 0) {
@@ -37,7 +36,6 @@ public class Server {
                         error.printStackTrace();
                     }
                 });
-                System.out.println("thread start");
                 thread.start();
             }
     }
